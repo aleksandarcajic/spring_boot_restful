@@ -6,16 +6,20 @@
 package com.skywalkers.dao;
 
 import com.skywalkers.entity.Customer;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author aleksandar
  */
+@Repository
 public class GreetingDAO {
 
     /**
@@ -26,18 +30,34 @@ public class GreetingDAO {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
-    public Customer findById(long id) {
+    /**
+     * Find customer by id
+     * @param id
+     * @return 
+     */
+    public List<Customer> findById(long id) {
         try {
             if (id > 0) {
-                jdbcTemplate.query(
-                        "SELECT id, first_name, last_name FROM customers WHERE id = ?", new Object[]{id},
-                        (rs, rowNum) -> new Customer(rs.getLong("id"), rs.getString("first_name"), rs.getString("last_name"))
-                );
+                return jdbcTemplate.query("SELECT id, first_name, last_name FROM customers WHERE id = ?", new Object[]{id}, new GreetingMapper());
             }
         } catch (DataAccessException e) {
-            
+            LOGGER.error(e.getMessage());
+            return new ArrayList<>();
         }
         return null;
+    }
+    
+    /**
+     * Find all
+     * @return 
+     */
+    public List<Customer> findAll() {
+        try {
+            return jdbcTemplate.query("SELECT id, first_name, last_name FROM customers", new GreetingMapper());
+        } catch(DataAccessException e) {
+            LOGGER.error(e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
 }
